@@ -24,7 +24,7 @@ def simulate_portfolio(
     end_date,
     allocation1=0.5,
     allocation2=0.5,
-    initial_investment=10000,
+    initial_investment=200,
 ):
     # Fetch and normalize data
     stock1_data = normalize_stock_data(get_stock_data(ticker1, start_date, end_date))
@@ -33,9 +33,15 @@ def simulate_portfolio(
     # Combine into a single DataFrame
     df = pd.DataFrame({ticker1: stock1_data, ticker2: stock2_data})
     df.dropna(inplace=True)  # Ensure no NaN values
+    print(df)
 
     # Calculate daily returns
     returns = df.pct_change().dropna()
+    print(returns)
+
+    # Calculate cumulative returns directly from normalized stock data
+    cumulative_returns_from_prices = df / 100
+    print(cumulative_returns_from_prices)
 
     # Add returns to the df DataFrame
     df[f"{ticker1}_Return"] = returns[ticker1].rolling(window=30).mean()
@@ -50,9 +56,9 @@ def simulate_portfolio(
 
     # Calculate portfolio value over time without rebalancing
     cumulative_returns_no_rebalance = (returns + 1).cumprod()
-    portfolio_values_no_rebalance = cumulative_returns_no_rebalance.dot(
-        investment_split
-    )
+    print(cumulative_returns_no_rebalance)
+    portfolio_values_no_rebalance = cumulative_returns_from_prices.dot(investment_split)
+    print(portfolio_values_no_rebalance)
 
     # Calculate portfolio value over time with daily rebalancing
     current_value = initial_investment
@@ -84,10 +90,10 @@ def simulate_portfolio(
 st.title("Stock Rebalancing Simulator")
 
 # User inputs
-ticker1 = st.text_input("Enter the first stock ticker:", "META")
+ticker1 = st.text_input("Enter the first stock ticker:", "GOOG")
 ticker2 = st.text_input("Enter the second stock ticker:", "NFLX")
-start_date = st.date_input("Start date", pd.to_datetime("2018-01-01"))
-end_date = st.date_input("End date", pd.to_datetime("2024-01-01"))
+start_date = st.date_input("Start date", pd.to_datetime("2024-01-01"))
+end_date = st.date_input("End date", pd.to_datetime("2024-01-21"))
 
 # Button to run simulation
 if st.button("Simulate"):
